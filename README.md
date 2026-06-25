@@ -155,7 +155,7 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 |---|---|---|
 | Multi-agente (notícias + técnico + orquestrador) | ✅ | "Investment Crew" (3 agentes) e "Deep Research Crew" (4 ag, inclui CVM RI) — http://localhost:3000/agents |
 | Agente de explicabilidade | ✅ | Campo `reasoning` em cada Recommendation é o output em linguagem natural do strategist |
-| Comparador de carteiras | ⚠️ parcial | http://localhost:3000/portfolio (1 portfolio Default, BUY/SELL funcionais) |
+| Comparador de carteiras por perfil de risco | ✅ | http://localhost:3000/portfolio — 3 carteiras seed (Conservador / Moderado / Agressivo) com descrição e sugestão de tamanho de posição por perfil |
 | Memória de longo prazo (vector store) | ❌ não implementado | — |
 | Alertas Telegram/email | ❌ não implementado | — |
 
@@ -379,9 +379,11 @@ Para o avaliador validar todos os requisitos em ≤ 5 minutos:
 
 ---
 
-## 👤 Autor
+## 👥 Autores
 
-**Ricardo Frasson**
-Data Scientist & AI Researcher · MBA Data Science & AI · FIAP 2026
+| Aluno | RM / Email | Papel |
+|---|---|---|
+| **Ricardo Frasson** | `ricardo.iadeluca@terra.com.br` | Data Scientist & AI Researcher · MBA Data Science & AI · FIAP 2026 |
+| **Gustavo Gabriel Garcia Gomes do Nascimento** | RM362350 · `RM362350@fiap.com.br` | Aluno e Data Scientist · MBA Data Science & AI · FIAP 2026 |
 
 Professor: **Felipe Gustavo Silva Teodoro**

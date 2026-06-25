@@ -53,6 +53,8 @@ def list_portfolios():
             total_pnl_pct = (total_pnl / p.initial_balance) * 100 if p.initial_balance else 0
             result.append({
                 "id": p.id, "name": p.name,
+                "risk_profile": p.risk_profile,
+                "description": p.description,
                 "cash": p.cash_balance, "equity": equity,
                 "initial": p.initial_balance,
                 "total_pnl": total_pnl, "total_pnl_pct": total_pnl_pct,

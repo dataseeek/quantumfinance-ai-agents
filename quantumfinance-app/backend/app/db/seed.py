@@ -1,5 +1,7 @@
-"""Seed inicial: 4 tickers, 3 agentes system, 1 crew, 1 portfolio."""
-from app.db.base import SessionLocal
+"""Seed inicial: 4 tickers, 4 agentes system, 2 crews, 3 portfolios por perfil de risco."""
+from sqlalchemy import text
+
+from app.db.base import SessionLocal, engine
 from app.db import models
 
 
@@ -75,6 +77,50 @@ DEFAULT_SETTINGS = {
 }
 
 
+SEED_PORTFOLIOS = [
+    {
+        "name": "Conservador",
+        "risk_profile": "conservative",
+        "cash_balance": 100000.0,
+        "initial_balance": 100000.0,
+        "description": (
+            "Aceita apenas AGUARDAR e COMPRAR de alta confluência. "
+            "Tamanho típico de posição: 1% do capital. Foco em preservação."
+        ),
+    },
+    {
+        "name": "Moderado",
+        "risk_profile": "moderate",
+        "cash_balance": 100000.0,
+        "initial_balance": 100000.0,
+        "description": (
+            "Aceita todas as recomendações (COMPRAR/VENDER/AGUARDAR). "
+            "Tamanho típico de posição: 5% do capital. Balanço risco-retorno."
+        ),
+    },
+    {
+        "name": "Agressivo",
+        "risk_profile": "aggressive",
+        "cash_balance": 100000.0,
+        "initial_balance": 100000.0,
+        "description": (
+            "Aceita todas as recomendações e usa alavancagem implícita. "
+            "Tamanho típico de posição: 15% do capital. Foco em retorno."
+        ),
+    },
+]
+
+
+def _ensure_portfolio_columns() -> None:
+    """SQLite-friendly migration: add risk_profile + description if missing."""
+    with engine.begin() as conn:
+        cols = {row[1] for row in conn.execute(text("PRAGMA table_info(portfolios)"))}
+        if "risk_profile" not in cols:
+            conn.execute(text("ALTER TABLE portfolios ADD COLUMN risk_profile VARCHAR(20)"))
+        if "description" not in cols:
+            conn.execute(text("ALTER TABLE portfolios ADD COLUMN description TEXT"))
+
+
 def seed_all() -> None:
     db = SessionLocal()
     try:
@@ -106,9 +152,28 @@ def seed_all() -> None:
                 db.add(models.Crew(name=c["name"], agent_ids=agent_ids, process_type="sequential"))
         db.commit()
 
-        # Portfolio default
-        if not db.query(models.Portfolio).first():
-            db.add(models.Portfolio(name="Default", cash_balance=100000.0, initial_balance=100000.0))
+        # Portfolios por perfil de risco — migração + seed idempotente
+        _ensure_portfolio_columns()
+        # Backfill: Default (legado) vira Moderado
+        default = db.query(models.Portfolio).filter_by(name="Default").first()
+        if default and not default.risk_profile:
+            default.name = "Moderado"
+            default.risk_profile = "moderate"
+            default.description = SEED_PORTFOLIOS[1]["description"]
+            db.commit()  # commit the rename so the lookup below sees it
+        # Seed novos perfis se ainda não existem
+        for p in SEED_PORTFOLIOS:
+            existing = db.query(models.Portfolio).filter(
+                (models.Portfolio.name == p["name"])
+                | (models.Portfolio.risk_profile == p["risk_profile"])
+            ).first()
+            if existing:
+                if not existing.risk_profile:
+                    existing.risk_profile = p["risk_profile"]
+                if not existing.description:
+                    existing.description = p["description"]
+            else:
+                db.add(models.Portfolio(**p))
         db.commit()
 
         # Settings

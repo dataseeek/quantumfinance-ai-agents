@@ -41,6 +41,8 @@ export type CvmFiling = {
 export type Portfolio = {
   id: number
   name: string
+  risk_profile: 'conservative' | 'moderate' | 'aggressive' | null
+  description: string | null
   cash: number
   equity: number
   initial: number

@@ -121,6 +121,9 @@ class Portfolio(Base):
     name: Mapped[str] = mapped_column(String(120), unique=True)
     cash_balance: Mapped[float] = mapped_column(Float, default=100000.0)
     initial_balance: Mapped[float] = mapped_column(Float, default=100000.0)
+    # Risk profile: conservative / moderate / aggressive
+    risk_profile: Mapped[Optional[str]] = mapped_column(String(20), default=None)
+    description: Mapped[Optional[str]] = mapped_column(Text, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
