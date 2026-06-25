@@ -6,7 +6,7 @@
 
 ---
 
-## ⚡ Como executar (1 comando)
+## Como executar (1 comando)
 
 **Pré-requisitos:** Docker Desktop e Docker Compose (testado em macOS Apple Silicon).
 
@@ -25,16 +25,16 @@ docker compose up -d --build
 
 | O que | URL |
 |---|---|
-| 🖥️ **Frontend (React)** | http://localhost:3000 |
-| 📚 **Swagger UI (Try-it-out)** | http://localhost:8000/docs |
-| 📖 **ReDoc** | http://localhost:8000/redoc |
-| 🩺 **Health check** | http://localhost:8000/api/health |
+| **Frontend (React)** | http://localhost:3000 |
+| **Swagger UI (Try-it-out)** | http://localhost:8000/docs |
+| **ReDoc** | http://localhost:8000/redoc |
+| **Health check** | http://localhost:8000/api/health |
 
 > A primeira build leva ~3–5 min (instala dependências Python + Node sob Rosetta). Depois fica em cache.
 
 ---
 
-## 🖼️ Screenshots
+## Screenshots
 
 ### Dashboard — gráfico candlestick + última recomendação + plano swing
 ![Dashboard](docs/screenshots/01-dashboard.png)
@@ -63,18 +63,18 @@ docker compose up -d --build
 ### Settings — schedulers cron, LLM, disparo manual de jobs
 ![Settings](docs/screenshots/09-settings.png)
 
-> 📸 Os screenshots ficam em `docs/screenshots/`. Para regerar (após qualquer mudança visual):
+> Os screenshots ficam em `docs/screenshots/`. Para regerar (após qualquer mudança visual):
 > ```bash
 > cd quantumfinance-app/frontend && npx playwright test e2e/screenshots.spec.ts
 > ```
 
 ---
 
-## 🎯 Onde verificar cada item do enunciado
+## Onde verificar cada item do enunciado
 
 Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do **Projeto Integrado AI Agents v2** (FIAP MBA 2026).
 
-### 1️⃣ Coleta e pré-processamento de dados
+### 1. Coleta e pré-processamento de dados
 
 | Componente | URL na UI | Arquivo no backend |
 |---|---|---|
@@ -84,7 +84,7 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 | **Bônus**: CVM RI filings (IPE, ITR, DFP) | http://localhost:3000/cvm | `quantumfinance-app/backend/app/tools/cvm.py` |
 | Endpoints REST | http://localhost:8000/docs → `tickers`, `chart`, `news`, `cvm` | `quantumfinance-app/backend/app/routes/` |
 
-### 2️⃣ Análise de sentimento
+### 2. Análise de sentimento
 
 | Componente | Onde |
 |---|---|
@@ -92,9 +92,9 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 | Tool `search_news` consumida pelo agente | `app/tools/news.py:24` (decorator `@tool`) |
 | LLM: OpenRouter → GPT-4o-mini (configurável) | `app/agents/llm.py` · `.env: LLM_MODEL` |
 
-### 3️⃣ AI Agent com Tools (mínimo 3)
+### 3. AI Agent com Tools (mínimo 3)
 
-✅ **6 tools** disponíveis (excede o mínimo):
+**6 tools** disponíveis (excede o mínimo):
 
 | Tool | Arquivo |
 |---|---|
@@ -107,7 +107,7 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 
 **Veja na UI**: http://localhost:3000/agents (4 agentes seed) — http://localhost:8000/api/agents/tools (lista JSON).
 
-### 4️⃣ Recomendações COMPRAR / VENDER / AGUARDAR + Chain-of-Thought
+### 4. Recomendações COMPRAR / VENDER / AGUARDAR + Chain-of-Thought
 
 | Componente | Onde verificar |
 |---|---|
@@ -117,17 +117,17 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 | Disparo manual do crew (todos os tickers) | UI: http://localhost:3000/settings → "Jobs ativos" → `crew` → "Rodar agora" |
 | CoT armazenado (raw output do crew) | tabela `agent_runs` (`raw_output` field) — query via `sqlite3 quantumfinance-app/backend/data/app.db` ou `GET /api/recommendations/{ticker}/latest` |
 
-### 5️⃣ Acurácia das recomendações (avaliação automática)
+### 5. Acurácia das recomendações (avaliação automática)
 
 | Componente | Onde |
 |---|---|
 | Tela com KPIs + breakdown por ticker e por tipo + detalhe linha-a-linha | **http://localhost:3000/accuracy** |
 | Endpoint | `GET http://localhost:8000/api/hit-rate?horizon_days=3` |
 | Lógica | `quantumfinance-app/backend/app/tools/hit_rate.py` |
-| Regras | COMPRAR ✓ se +0.5%; VENDER ✓ se −0.5%; AGUARDAR ✓ se |Δ| < 1% |
+| Regras | COMPRAR acerta se subiu mais de 0.5%; VENDER acerta se caiu mais de 0.5%; AGUARDAR acerta se ficou lateral (variação absoluta menor que 1%) |
 | Janelas testáveis | D+1, D+3, D+5, D+10 (selector na UI) |
 
-### 6️⃣ Backtest vs Buy-and-Hold (opcional, valorizado)
+### 6. Backtest vs Buy-and-Hold (opcional, valorizado)
 
 | Componente | Onde |
 |---|---|
@@ -137,7 +137,7 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 | Estratégia | MACD-cross + RSI determinístico (documentado em `app/tools/backtest.py`) |
 | Períodos suportados | `1mo`, `3mo`, `6mo`, `1y`, `2y` |
 
-### 7️⃣ Interface conversacional (opcional)
+### 7. Interface conversacional (opcional)
 
 | Componente | Onde |
 |---|---|
@@ -149,62 +149,62 @@ Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do
 
 ---
 
-## 🌟 Bônus (criatividade — PDF página "O QUE MAIS")
+## Bônus (criatividade — PDF página "O QUE MAIS")
 
 | Bônus do enunciado | Status | Onde |
 |---|---|---|
-| Multi-agente (notícias + técnico + orquestrador) | ✅ | "Investment Crew" (3 agentes) e "Deep Research Crew" (4 ag, inclui CVM RI) — http://localhost:3000/agents |
-| Agente de explicabilidade | ✅ | Campo `reasoning` em cada Recommendation é o output em linguagem natural do strategist |
-| Comparador de carteiras por perfil de risco | ✅ | http://localhost:3000/portfolio — 3 carteiras seed (Conservador / Moderado / Agressivo) com descrição e sugestão de tamanho de posição por perfil |
-| Memória de longo prazo (vector store) | ❌ não implementado | — |
-| Alertas Telegram/email | ❌ não implementado | — |
+| Multi-agente (notícias + técnico + orquestrador) | **implementado** | "Investment Crew" (3 agentes) e "Deep Research Crew" (4 ag, inclui CVM RI) — http://localhost:3000/agents |
+| Agente de explicabilidade | **implementado** | Campo `reasoning` em cada Recommendation é o output em linguagem natural do strategist |
+| Comparador de carteiras por perfil de risco | **implementado** | http://localhost:3000/portfolio — 3 carteiras seed (Conservador / Moderado / Agressivo) com descrição e sugestão de tamanho de posição por perfil |
+| Memória de longo prazo (vector store) | não implementado | — |
+| Alertas Telegram/email | não implementado | — |
 
 ---
 
-## 🏛️ Arquitetura
+## Arquitetura
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│   Frontend  (React 19 + Vite + Tailwind + lightweight-charts)
-│   nginx :3000                                            │
+│ Frontend (React 19 + Vite + Tailwind + lightweight-charts)
+│ nginx :3000 │
 └──────────────────┬──────────────────────────────────────┘
-                   │ HTTP / WebSocket  (proxy via nginx)
-                   ↓
+│ HTTP / WebSocket (proxy via nginx)
+↓
 ┌─────────────────────────────────────────────────────────┐
-│   Backend  (FastAPI + SQLAlchemy 2.x + APScheduler)      │
-│   uvicorn :8000                                          │
-│   ├── routes/  (REST: 25 endpoints + WS chat)            │
-│   ├── agents/  (CrewAI: agents, crews, kickoff)          │
-│   ├── tools/   (6 tools LLM: news, prices, ...)          │
-│   ├── scheduler/ (cron: news 4h, crew daily, CVM weekly) │
-│   └── ws/      (WebSocket chat com streaming)            │
+│ Backend (FastAPI + SQLAlchemy 2.x + APScheduler) │
+│ uvicorn :8000 │
+│ ├── routes/ (REST: 25 endpoints + WS chat) │
+│ ├── agents/ (CrewAI: agents, crews, kickoff) │
+│ ├── tools/ (6 tools LLM: news, prices, ...) │
+│ ├── scheduler/ (cron: news 4h, crew daily, CVM weekly) │
+│ └── ws/ (WebSocket chat com streaming) │
 └──────────────────┬──────────────────────────────────────┘
-                   │ SQLAlchemy
-                   ↓
+│ SQLAlchemy
+↓
 ┌─────────────────────────────────────────────────────────┐
-│   SQLite (WAL mode)  /app/data/app.db                    │
-│   14 tabelas: tickers, agents, crews, agent_runs,        │
-│   recommendations, news_items, cvm_filings, portfolios,  │
-│   positions, orders, chat_sessions, chat_messages, ...   │
+│ SQLite (WAL mode) /app/data/app.db │
+│ 14 tabelas: tickers, agents, crews, agent_runs, │
+│ recommendations, news_items, cvm_filings, portfolios, │
+│ positions, orders, chat_sessions, chat_messages, ... │
 └─────────────────────────────────────────────────────────┘
-                   ↑
-          ┌────────┴────────┐
-          │  Fontes externas │
-          ├──────────────────┤
-          │  yfinance (preços)│
-          │  Google News     │
-          │  InfoMoney RSS   │
-          │  Valor RSS       │
-          │  CVM IPE/ITR/DFP │
-          │  OpenRouter (LLM)│
-          └──────────────────┘
+↑
+┌────────┴────────┐
+│ Fontes externas │
+├──────────────────┤
+│ yfinance (preços)│
+│ Google News │
+│ InfoMoney RSS │
+│ Valor RSS │
+│ CVM IPE/ITR/DFP │
+│ OpenRouter (LLM)│
+└──────────────────┘
 ```
 
 Diagrama interativo (HTML estático): [`architecture.html`](architecture.html).
 
 ---
 
-## 🧩 Telas do frontend
+## Telas do frontend
 
 | Rota | Descrição |
 |---|---|
@@ -220,59 +220,59 @@ Diagrama interativo (HTML estático): [`architecture.html`](architecture.html).
 
 ---
 
-## 📡 API REST — endpoints principais
+## API REST — endpoints principais
 
 Browse interativo: **http://localhost:8000/docs** (Swagger com "Try it out").
 
 ```
-GET    /api/health
-GET    /api/tickers
-GET    /api/chart/{ticker}                       — OHLCV + indicadores
+GET /api/health
+GET /api/tickers
+GET /api/chart/{ticker} — OHLCV + indicadores
 
-GET    /api/agents                               — Lista agentes seed
-POST   /api/agents                               — Cria novo agente
-PUT    /api/agents/{id}                          — Edita
-DELETE /api/agents/{id}                          — Remove
-POST   /api/agents/{id}/test                     — Roda single-agent
-GET    /api/crews                                — Lista crews
+GET /api/agents — Lista agentes seed
+POST /api/agents — Cria novo agente
+PUT /api/agents/{id} — Edita
+DELETE /api/agents/{id} — Remove
+POST /api/agents/{id}/test — Roda single-agent
+GET /api/crews — Lista crews
 
-GET    /api/news/{ticker}                        — Notícias persistidas
-POST   /api/news/{ticker}/ingest                 — Força nova ingestão
+GET /api/news/{ticker} — Notícias persistidas
+POST /api/news/{ticker}/ingest — Força nova ingestão
 
-GET    /api/cvm/{ticker}/filings?refresh=bool    — IPE/ITR/DFP
+GET /api/cvm/{ticker}/filings?refresh=bool — IPE/ITR/DFP
 
-GET    /api/recommendations                      — Histórico completo
-GET    /api/recommendations/{ticker}/latest      — Última
-GET    /api/recommendations/{ticker}/swing-plan  — Stop/target/R/R
-POST   /api/recommendations/run                  — Roda crew para 1 ticker
+GET /api/recommendations — Histórico completo
+GET /api/recommendations/{ticker}/latest — Última
+GET /api/recommendations/{ticker}/swing-plan — Stop/target/R/R
+POST /api/recommendations/run — Roda crew para 1 ticker
 
-GET    /api/backtest                             — Resumo 4 tickers
-GET    /api/backtest/{ticker}                    — Curva + métricas
+GET /api/backtest — Resumo 4 tickers
+GET /api/backtest/{ticker} — Curva + métricas
 
-GET    /api/hit-rate?horizon_days=N              — Acurácia automática D+N
-                                                   (regras: COMPRAR > +0.5%, VENDER < -0.5%,
-                                                    AGUARDAR |Δ| < 1%)
+GET /api/hit-rate?horizon_days=N — Acurácia automática D+N
+(regras: COMPRAR > +0.5%, VENDER < -0.5%,
+AGUARDAR |Δ| < 1%)
 
-GET    /api/portfolios                           — Carteiras
-POST   /api/portfolios/{id}/orders               — BUY/SELL
+GET /api/portfolios — Carteiras
+POST /api/portfolios/{id}/orders — BUY/SELL
 
-GET    /api/scheduler/jobs                       — Próximas execuções
-POST   /api/scheduler/reload                     — Recarrega da settings
-POST   /api/scheduler/run/{news|crew|cvm}        — Dispara on-demand
+GET /api/scheduler/jobs — Próximas execuções
+POST /api/scheduler/reload — Recarrega da settings
+POST /api/scheduler/run/{news|crew|cvm} — Dispara on-demand
 
-GET    /api/settings                             — Tunáveis
-PUT    /api/settings/{key}                       — Atualiza
+GET /api/settings — Tunáveis
+PUT /api/settings/{key} — Atualiza
 
-GET    /api/chat-sessions                        — Histórico
-GET    /api/chat-sessions/{id}/messages          — Mensagens
-DELETE /api/chat-sessions/{id}                   — Apaga
+GET /api/chat-sessions — Histórico
+GET /api/chat-sessions/{id}/messages — Mensagens
+DELETE /api/chat-sessions/{id} — Apaga
 
-WS     /api/chat                                 — Chat streaming
+WS /api/chat — Chat streaming
 ```
 
 ---
 
-## 📦 Entregáveis nesta raiz (Agents/)
+## Entregáveis nesta raiz (Agents/)
 
 ### Stack ao vivo (recomendado para avaliação)
 
@@ -290,7 +290,7 @@ WS     /api/chat                                 — Chat streaming
 
 ---
 
-## 🛠️ Stack técnica
+## Stack técnica
 
 ### Backend (`quantumfinance-app/backend/`)
 
@@ -317,18 +317,18 @@ Detalhes em `quantumfinance-app/backend/requirements.txt`.
 
 ---
 
-## 🔐 Configuração e segurança
+## Configuração e segurança
 
 | Secret | Onde fica | Versionado? |
 |---|---|---|
-| `OPENROUTER_API_KEY` | `quantumfinance-app/backend/.env` | **❌ Ignorado por `.gitignore`** |
-| Template sem segredo | `quantumfinance-app/backend/.env.example` | ✅ versionado |
+| `OPENROUTER_API_KEY` | `quantumfinance-app/backend/.env` | **não versionado** (ignorado por `.gitignore`) |
+| Template sem segredo | `quantumfinance-app/backend/.env.example` | **versionado** |
 
 A regra `.gitignore` cobre: `.env`, `quantumfinance-app/backend/.env`, `data/*.db`, `node_modules/`, `dist/`, `__pycache__/`.
 
 ---
 
-## 🩺 Troubleshooting
+## Troubleshooting
 
 | Sintoma | Solução |
 |---|---|
@@ -341,7 +341,7 @@ A regra `.gitignore` cobre: `.env`, `quantumfinance-app/backend/.env`, `data/*.d
 
 ---
 
-## 📊 Estado do banco de dados entregue
+## Estado do banco de dados entregue
 
 O repositório inclui `quantumfinance-app/backend/data/app.db` (~500 KB) **já populado** com todos os dados coletados durante o desenvolvimento — o avaliador pode subir o stack e já encontrar histórico real sem precisar rodar os jobs:
 
@@ -363,7 +363,7 @@ O repositório inclui `quantumfinance-app/backend/data/app.db` (~500 KB) **já p
 
 ---
 
-## ✅ Checklist de avaliação rápida
+## Checklist de avaliação rápida
 
 Para o avaliador validar todos os requisitos em ≤ 5 minutos:
 
@@ -379,7 +379,7 @@ Para o avaliador validar todos os requisitos em ≤ 5 minutos:
 
 ---
 
-## 👥 Autores
+## Autores
 
 | Aluno | RM / Email | Papel |
 |---|---|---|
