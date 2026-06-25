@@ -7,6 +7,7 @@ import Portfolio from './pages/Portfolio'
 import Agents from './pages/Agents'
 import Settings from './pages/Settings'
 import Backtest from './pages/Backtest'
+import Accuracy from './pages/Accuracy'
 import { ToastProvider } from './components/Toast'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
             { to: '/chat', label: 'Chat' },
             { to: '/portfolio', label: 'Portfolio' },
             { to: '/backtest', label: 'Backtest' },
+            { to: '/accuracy', label: 'Acurácia' },
             { to: '/agents', label: 'Agents' },
             { to: '/settings', label: 'Settings' },
           ].map(({ to, label }) => (
@@ -51,6 +53,7 @@ export default function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/backtest" element={<Backtest />} />
+          <Route path="/accuracy" element={<Accuracy />} />
           <Route path="/agents" element={<Agents />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

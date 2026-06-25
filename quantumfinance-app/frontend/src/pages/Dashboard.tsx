@@ -101,10 +101,15 @@ export default function Dashboard() {
             <h3 style={{ marginBottom: 12, fontSize: 14 }}>Última recomendação</h3>
             {latestRec.data ? (
               <>
-                <div style={{ marginBottom: 8 }}>
+                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <RecPill rec={latestRec.data.recommendation} />
-                  <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--text-muted)' }}>
-                    {latestRec.data.date.split('T')[0]}
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                    {(() => {
+                      const d = new Date(latestRec.data.date)
+                      const date = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                      const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                      return `${date} · ${time}`
+                    })()}
                   </span>
                 </div>
                 {(() => {

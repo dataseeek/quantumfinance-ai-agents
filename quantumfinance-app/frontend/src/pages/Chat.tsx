@@ -3,8 +3,35 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '../api'
 import { useToast, errorMessage } from '../components/Toast'
 
-type Msg = { role: 'user' | 'assistant' | 'system'; content: string; agent?: string }
+type Msg = { role: 'user' | 'assistant' | 'system'; content: string; agent?: string; streaming?: boolean }
 type Session = { id: number; started_at: string; preview: string; message_count: number }
+
+const TARGET_HINT = (
+  'Quem responde:\n' +
+  '• Crew completo — Pipeline multi-agente (notícias + técnico + estrategista) que produz uma recomendação oficial COMPRAR/VENDER/AGUARDAR. Requer um ticker.\n' +
+  '• Single-agent (News/Technical/Strategist/CVM RI) — Pergunta direta a um agente, com streaming token-a-token. Cite o ticker na mensagem se quiser falar de uma ação específica.'
+)
+
+const TICKER_HINT = (
+  'Sobre qual ação o crew vai trabalhar.\n' +
+  'Dica: se você esquecer de mudar aqui, o sistema lê sua mensagem e detecta o ticker automaticamente — basta citar VALE3 / Petrobras / Itaú / Banco do Brasil.'
+)
+
+function Hint({ text }: { text: string }) {
+  return (
+    <span
+      title={text}
+      aria-label={text}
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: 14, height: 14, borderRadius: '50%',
+        border: '1px solid var(--text-muted)', color: 'var(--text-muted)',
+        fontSize: 9, fontWeight: 700, cursor: 'help', userSelect: 'none',
+        marginLeft: -4,
+      }}
+    >?</span>
+  )
+}
 
 export default function Chat() {
   const toast = useToast()
@@ -46,14 +73,62 @@ export default function Chat() {
     ws.onclose = () => setConnected(false)
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data)
-      if (data.type === 'session') setActiveSessionId(data.session_id)
-      else if (data.type === 'message') {
+      if (data.type === 'session') {
+        setActiveSessionId(data.session_id)
+        return
+      }
+      if (data.type === 'thinking') {
+        setThinking(true)
+        return
+      }
+      if (data.type === 'chunk') {
+        // Streaming token from single-agent reply: append to (or create) last assistant message.
+        setThinking(false)
+        setMessages(prev => {
+          const last = prev[prev.length - 1]
+          if (last && last.role === 'assistant' && last.streaming) {
+            const updated = [...prev]
+            updated[updated.length - 1] = { ...last, content: last.content + data.delta }
+            return updated
+          }
+          return [...prev, { role: 'assistant', content: data.delta, agent: data.agent, streaming: true }]
+        })
+        return
+      }
+      if (data.type === 'done') {
+        // End of stream — close the streaming assistant message.
+        setMessages(prev => {
+          const last = prev[prev.length - 1]
+          if (last && last.role === 'assistant' && last.streaming) {
+            const updated = [...prev]
+            updated[updated.length - 1] = { ...last, streaming: false }
+            return updated
+          }
+          return prev
+        })
+        return
+      }
+      if (data.type === 'message') {
+        // Crew path: full message arrives in one shot (no token streaming).
         setThinking(false)
         setMessages(prev => [...prev, { role: 'assistant', content: data.content, agent: data.agent }])
-      } else if (data.type === 'thinking') setThinking(true)
-      else if (data.type === 'error') {
+        return
+      }
+      if (data.type === 'auto_ticker') {
+        // Backend detected a ticker in the message different from the dropdown.
+        // Show a discreet system note and sync the dropdown so the next turn
+        // stays on the detected ticker.
+        setTicker(data.to)
+        setMessages(prev => [...prev, {
+          role: 'system',
+          content: `🎯 Detectei "${data.to}" na sua mensagem (dropdown estava em ${data.from}). Trocando para ${data.to}.`,
+        }])
+        return
+      }
+      if (data.type === 'error') {
         setThinking(false)
         setMessages(prev => [...prev, { role: 'system', content: `Erro: ${data.error}` }])
+        return
       }
     }
     return () => ws.close()
@@ -149,10 +224,14 @@ export default function Chat() {
             <option value="investment_strategist">Investment Strategist</option>
             <option value="cvm_ri_analyst">CVM RI Analyst</option>
           </select>
+          <Hint text={TARGET_HINT} />
           {target === 'crew' && (
-            <select value={ticker} onChange={e => setTicker(e.target.value)}>
-              {['VALE3','PETR4','BBAS3','ITUB4'].map(t => <option key={t}>{t}</option>)}
-            </select>
+            <>
+              <select value={ticker} onChange={e => setTicker(e.target.value)}>
+                {['VALE3','PETR4','BBAS3','ITUB4'].map(t => <option key={t}>{t}</option>)}
+              </select>
+              <Hint text={TICKER_HINT} />
+            </>
           )}
         </div>
 
@@ -167,18 +246,32 @@ export default function Chat() {
               </div>
             </div>
           )}
-          {messages.map((m, i) => (
-            <div key={i} style={{
-              marginBottom: 12, padding: 12, borderRadius: 8,
-              background: m.role === 'user' ? 'rgba(66,165,245,0.12)' : 'var(--bg-elevated)',
-              borderLeft: `3px solid ${m.role === 'user' ? 'var(--blue)' : 'var(--pink)'}`,
-            }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
-                {m.role === 'user' ? 'Você' : (m.agent || 'assistant')}
+          {messages.map((m, i) => {
+            if (m.role === 'system') {
+              return (
+                <div key={i} style={{
+                  marginBottom: 12, padding: '6px 12px', borderRadius: 6,
+                  background: 'rgba(255,193,7,0.10)', borderLeft: '3px solid #ffa726',
+                  fontSize: 12, color: 'var(--text-muted)',
+                }}>
+                  {m.content}
+                </div>
+              )
+            }
+            return (
+              <div key={i} style={{
+                marginBottom: 12, padding: 12, borderRadius: 8,
+                background: m.role === 'user' ? 'rgba(66,165,245,0.12)' : 'var(--bg-elevated)',
+                borderLeft: `3px solid ${m.role === 'user' ? 'var(--blue)' : 'var(--pink)'}`,
+              }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+                  {m.role === 'user' ? 'Você' : (m.agent || 'assistant')}
+                  {m.streaming && <span style={{ marginLeft: 6, color: 'var(--pink)' }}>▍</span>}
+                </div>
+                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 13, margin: 0 }}>{m.content}</pre>
               </div>
-              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 13, margin: 0 }}>{m.content}</pre>
-            </div>
-          ))}
+            )
+          })}
           {thinking && <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>🧠 pensando…</p>}
           <div ref={bottomRef} />
         </div>

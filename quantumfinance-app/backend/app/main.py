@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.base import Base, engine
 from app.db.seed import seed_all
-from app.routes import tickers, chart, news, recommendations, cvm, portfolio, agents, settings as settings_route, scheduler as scheduler_route, chat_sessions, backtest as backtest_route
+from app.routes import tickers, chart, news, recommendations, cvm, portfolio, agents, settings as settings_route, scheduler as scheduler_route, chat_sessions, backtest as backtest_route, hit_rate as hit_rate_route
 from app.ws.chat import router as chat_router
 from app.scheduler import manager as scheduler_manager
 
@@ -45,6 +45,7 @@ app.include_router(scheduler_route.router)
 app.include_router(chat_sessions.router)
 app.include_router(chat_router)
 app.include_router(backtest_route.router)
+app.include_router(hit_rate_route.router)
 
 
 @app.get("/api/health")

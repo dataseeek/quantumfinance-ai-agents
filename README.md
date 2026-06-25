@@ -2,7 +2,7 @@
 
 > **Projeto Integrado · MBA Data Science & AI · FIAP 2026**
 > Sistema multi-agente (CrewAI) que combina notícias, indicadores técnicos e dados regulatórios da CVM para emitir recomendações diárias **COMPRAR / VENDER / AGUARDAR** sobre 4 ações da B3 — VALE3, PETR4, BBAS3, ITUB4.
-> Entregue como **stack full-stack dockerizada** (FastAPI + React) + **Jupyter Notebook histórico**.
+> Entregue como **stack full-stack dockerizada** (FastAPI + React) — backend, frontend, dataset populado e documentação visual.
 
 ---
 
@@ -14,6 +14,7 @@
 # 1. Configure a chave da LLM (uma vez)
 cp quantumfinance-app/backend/.env.example quantumfinance-app/backend/.env
 # Edite o .env e preencha OPENROUTER_API_KEY com sua chave da openrouter.ai
+# Gere uma chave gratuita em: https://openrouter.ai/settings/keys
 
 # 2. Suba o stack
 cd quantumfinance-app
@@ -41,6 +42,9 @@ docker compose up -d --build
 ### Backtest — Agente vs Buy-and-Hold com curva de equity
 ![Backtest](docs/screenshots/06-backtest.png)
 
+### Acurácia — hit-rate D+N por ticker e tipo de recomendação
+![Acurácia](docs/screenshots/07-accuracy.png)
+
 ### News — ingestão de notícias multi-fonte (Google News + InfoMoney + Valor)
 ![News](docs/screenshots/02-news.png)
 
@@ -54,10 +58,10 @@ docker compose up -d --build
 ![Portfolio](docs/screenshots/05-portfolio.png)
 
 ### Agents — CRUD dos agentes CrewAI
-![Agents](docs/screenshots/07-agents.png)
+![Agents](docs/screenshots/08-agents.png)
 
 ### Settings — schedulers cron, LLM, disparo manual de jobs
-![Settings](docs/screenshots/08-settings.png)
+![Settings](docs/screenshots/09-settings.png)
 
 > 📸 Os screenshots ficam em `docs/screenshots/`. Para regerar (após qualquer mudança visual):
 > ```bash
@@ -68,7 +72,7 @@ docker compose up -d --build
 
 ## 🎯 Onde verificar cada item do enunciado
 
-Caminho rápido para o avaliador conferir cada requisito do `Projeto_Integrado_AI_Agents_v2.pdf`.
+Caminho rápido para o avaliador conferir cada requisito do enunciado oficial do **Projeto Integrado AI Agents v2** (FIAP MBA 2026).
 
 ### 1️⃣ Coleta e pré-processamento de dados
 
@@ -113,7 +117,17 @@ Caminho rápido para o avaliador conferir cada requisito do `Projeto_Integrado_A
 | Disparo manual do crew (todos os tickers) | UI: http://localhost:3000/settings → "Jobs ativos" → `crew` → "Rodar agora" |
 | CoT armazenado (raw output do crew) | tabela `agent_runs` (`raw_output` field) — query via `sqlite3 quantumfinance-app/backend/data/app.db` ou `GET /api/recommendations/{ticker}/latest` |
 
-### 5️⃣ Backtest vs Buy-and-Hold (opcional, valorizado)
+### 5️⃣ Acurácia das recomendações (avaliação automática)
+
+| Componente | Onde |
+|---|---|
+| Tela com KPIs + breakdown por ticker e por tipo + detalhe linha-a-linha | **http://localhost:3000/accuracy** |
+| Endpoint | `GET http://localhost:8000/api/hit-rate?horizon_days=3` |
+| Lógica | `quantumfinance-app/backend/app/tools/hit_rate.py` |
+| Regras | COMPRAR ✓ se +0.5%; VENDER ✓ se −0.5%; AGUARDAR ✓ se |Δ| < 1% |
+| Janelas testáveis | D+1, D+3, D+5, D+10 (selector na UI) |
+
+### 6️⃣ Backtest vs Buy-and-Hold (opcional, valorizado)
 
 | Componente | Onde |
 |---|---|
@@ -122,9 +136,8 @@ Caminho rápido para o avaliador conferir cada requisito do `Projeto_Integrado_A
 | API detalhe + curva diária | `GET http://localhost:8000/api/backtest/{ticker}?period=6mo` |
 | Estratégia | MACD-cross + RSI determinístico (documentado em `app/tools/backtest.py`) |
 | Períodos suportados | `1mo`, `3mo`, `6mo`, `1y`, `2y` |
-| Snapshot histórico (notebook 29/05) | `backtest_curves.png` + `summary.csv` na raiz |
 
-### 6️⃣ Interface conversacional (opcional)
+### 7️⃣ Interface conversacional (opcional)
 
 | Componente | Onde |
 |---|---|
@@ -187,7 +200,7 @@ Caminho rápido para o avaliador conferir cada requisito do `Projeto_Integrado_A
           └──────────────────┘
 ```
 
-Diagrama interativo: `architecture.html` (abra direto no navegador).
+Diagrama interativo (HTML estático): [`architecture.html`](architecture.html).
 
 ---
 
@@ -201,6 +214,7 @@ Diagrama interativo: `architecture.html` (abra direto no navegador).
 | `/chat` | Chat conversacional com agentes via WebSocket · histórico de sessões com delete |
 | `/portfolio` | Carteira fictícia · ordens BUY/SELL |
 | `/backtest` | **Agente vs Buy-and-Hold** com tabela + curva de equity |
+| `/accuracy` | **Acurácia** das recomendações: hit-rate D+N + breakdown por ticker/tipo + detalhe por rec |
 | `/agents` | CRUD de agentes do CrewAI |
 | `/settings` | Crons, modelo LLM, disparo manual dos jobs |
 
@@ -235,6 +249,10 @@ POST   /api/recommendations/run                  — Roda crew para 1 ticker
 GET    /api/backtest                             — Resumo 4 tickers
 GET    /api/backtest/{ticker}                    — Curva + métricas
 
+GET    /api/hit-rate?horizon_days=N              — Acurácia automática D+N
+                                                   (regras: COMPRAR > +0.5%, VENDER < -0.5%,
+                                                    AGUARDAR |Δ| < 1%)
+
 GET    /api/portfolios                           — Carteiras
 POST   /api/portfolios/{id}/orders               — BUY/SELL
 
@@ -263,26 +281,12 @@ WS     /api/chat                                 — Chat streaming
 | `quantumfinance-app/` | Backend FastAPI + Frontend React + `docker-compose.yml` — **superfície principal** |
 | `README.md` | Este arquivo |
 
-### Notebook + relatórios (snapshots históricos)
+### Documentação visual
 
 | Arquivo | O que é |
 |---|---|
-| `Projeto_Integrado_CrewAI_QuantumFinance.ipynb` | Notebook original (~44 células) — versão de 29/05/2026 |
-| `recommendations.json` | Recomendações do run de 29/05 |
-| `cot_log.md` | Chain-of-Thought completo do run de 29/05 |
-| `backtest_curves.png` | Curvas de equity (PNG estático) |
-| `summary.csv`, `swing_plan.csv` | Snapshots de 29/05 |
-| `history/2026-05-*/` | Snapshots arquivados por data |
-| `final_state.html` | Relatório executivo completo (12 seções) |
-| `architecture.html` | Diagrama de arquitetura em 5 camadas |
-
-### Documentação do enunciado
-
-| Arquivo |
-|---|
-| `Projeto_Integrado_AI_Agents_v2.pdf` |
-| `Imp AI Agents - Avaliacao AI Agents.pdf` (rubric) |
-| `exercicio_1_google_adk_acoes.pdf`, `exercicio_2_google_adk_assistente_caixa.pdf` |
+| `architecture.html` | Diagrama de arquitetura em 5 camadas (abra no navegador) |
+| `docs/screenshots/` | Capturas das 9 telas do frontend |
 
 ---
 
@@ -371,7 +375,7 @@ Para o avaliador validar todos os requisitos em ≤ 5 minutos:
 - [ ] Abrir http://localhost:3000/backtest → ver comparação Agente vs B&H
 - [ ] Abrir http://localhost:3000/chat → conversar com um agente (selecionar "News Analyst" + ticker)
 - [ ] Abrir http://localhost:8000/docs → testar qualquer endpoint via Swagger
-- [ ] Abrir `final_state.html` em qualquer browser → relatório executivo de 12 seções
+- [ ] Abrir `architecture.html` em qualquer browser → diagrama de arquitetura em 5 camadas
 
 ---
 

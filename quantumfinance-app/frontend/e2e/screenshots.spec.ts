@@ -14,8 +14,9 @@ const pages = [
   { path: '/chat',      name: '04-chat',       waitFor: 'text=Chat com Agentes' },
   { path: '/portfolio', name: '05-portfolio',  waitFor: 'text=Carteira' },
   { path: '/backtest',  name: '06-backtest',   waitFor: 'text=Backtest' },
-  { path: '/agents',    name: '07-agents',     waitFor: 'text=Agentes' },
-  { path: '/settings',  name: '08-settings',   waitFor: 'text=Settings' },
+  { path: '/accuracy',  name: '07-accuracy',   waitFor: 'text=Acurácia' },
+  { path: '/agents',    name: '08-agents',     waitFor: 'text=Agentes' },
+  { path: '/settings',  name: '09-settings',   waitFor: 'text=Settings' },
 ]
 
 for (const p of pages) {
