@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arquitetura — Projeto Integrado AI Agents (QuantumFinance + CrewAI)</title>
+<title>Arquitetura — QuantumFinance AI Agent Home Broker (CrewAI + FastAPI + React)</title>
 <style>
   :root {
     --pink: #e91e63;
@@ -27,7 +27,7 @@
     padding: 40px 20px;
   }
   header {
-    max-width: 960px;
+    max-width: 1040px;
     margin: 0 auto 40px;
     text-align: center;
   }
@@ -59,7 +59,7 @@
     color: var(--gray-700);
   }
   .flow {
-    max-width: 960px;
+    max-width: 1040px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -83,6 +83,7 @@
     align-items: baseline;
     gap: 14px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
   }
   .layer-num {
     background: var(--pink);
@@ -131,6 +132,12 @@
     color: var(--gray-500);
     font-size: 0.82rem;
     line-height: 1.4;
+  }
+  .card-sub code {
+    background: var(--white);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.78rem;
   }
   /* Sequential row (agents) — horizontal arrows inside the layer */
   .cards-row {
@@ -186,8 +193,39 @@
   .layer.orange { border-top-color: #ef6c00; }
   .layer.orange .layer-num { background: #ef6c00; }
   .layer.orange .card { border-left-color: #ef6c00; }
+  .layer.teal { border-top-color: #00838f; }
+  .layer.teal .layer-num { background: #00838f; }
+  .layer.teal .card { border-left-color: #00838f; }
+  .layer.red { border-top-color: #c62828; }
+  .layer.red .layer-num { background: #c62828; }
+  .layer.red .card { border-left-color: #c62828; }
+  /* Sub-grouping inside a layer */
+  .sub-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--gray-300);
+  }
+  .sub-section-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  /* Badges (for crew composition) */
+  .agent-chip {
+    display: inline-block;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 0.75rem;
+    color: var(--gray-700);
+    margin: 2px 4px 2px 0;
+  }
   footer {
-    max-width: 960px;
+    max-width: 1040px;
     margin: 50px auto 0;
     text-align: center;
     color: var(--gray-500);
@@ -196,6 +234,8 @@
     border-top: 1px solid var(--gray-300);
   }
   footer strong { color: var(--gray-700); }
+  footer a { color: var(--pink); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
   @media (max-width: 600px) {
     header h1 { font-size: 1.6rem; }
     .layer { padding: 18px; }
@@ -208,13 +248,14 @@
 <body>
 
 <header>
-  <h1>Arquitetura — <span class="accent">AI Investment Agent</span></h1>
-  <div class="subtitle">Projeto Integrado · QuantumFinance · CrewAI Multi-Agent · OpenRouter</div>
+  <h1>Arquitetura — <span class="accent">QuantumFinance AI Agent Home Broker</span></h1>
+  <div class="subtitle">Multi-agent CrewAI · FastAPI · React 19 · SQLite (WAL) · Docker Compose</div>
   <div class="meta">
     <span>VALE3 · PETR4 · BBAS3 · ITUB4</span>
-    <span>Python 3.10</span>
-    <span>CrewAI 1.14</span>
-    <span>FIAP MBA Data Science & AI</span>
+    <span>Python 3.10 · CrewAI 1.6+</span>
+    <span>React 19 · Vite 8</span>
+    <span>OpenRouter (gpt-4o-mini)</span>
+    <span>FIAP MBA Data Science & AI · 2026</span>
   </div>
 </header>
 
@@ -224,21 +265,29 @@
   <div class="layer green">
     <div class="layer-head">
       <span class="layer-num">1</span>
-      <span class="layer-title">Fontes de Dados</span>
-      <span class="layer-desc">externas, open-source, sem API key</span>
+      <span class="layer-title">Fontes de Dados Externas</span>
+      <span class="layer-desc">open-source, sem API key (exceto LLM)</span>
     </div>
     <div class="cards">
       <div class="card">
-        <div class="card-title">RSS · InfoMoney</div>
-        <div class="card-sub">Manchetes financeiras em PT-BR via <code>feedparser</code></div>
+        <div class="card-title">yfinance</div>
+        <div class="card-sub">OHLCV diário B3 (sufixo <code>.SA</code>) · 6m, 1y, 2y</div>
       </div>
       <div class="card">
-        <div class="card-title">RSS · Valor Econômico</div>
+        <div class="card-title">Google News RSS</div>
+        <div class="card-sub">Query <strong>por ticker</strong> (alta cobertura) <code>news.google.com/rss/search</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">InfoMoney RSS</div>
+        <div class="card-sub">Manchetes financeiras PT-BR via <code>feedparser</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Valor Econômico RSS</div>
         <div class="card-sub">Mercados / Finanças via <code>feedparser</code></div>
       </div>
       <div class="card">
-        <div class="card-title">yfinance · Yahoo Finance</div>
-        <div class="card-sub">OHLCV diário (6 meses) para tickers B3 (sufixo <code>.SA</code>)</div>
+        <div class="card-title">CVM RAD</div>
+        <div class="card-sub">IPE / ITR / DFP (fatos relevantes) por CNPJ</div>
       </div>
     </div>
   </div>
@@ -250,16 +299,16 @@
     <div class="layer-head">
       <span class="layer-num">2</span>
       <span class="layer-title">Tools (CrewAI <code>@tool</code>)</span>
-      <span class="layer-desc">4 ferramentas — &gt; 3 exigidas no rubric</span>
+      <span class="layer-desc">6 tools — 2x acima do mínimo do rubric</span>
     </div>
     <div class="cards">
       <div class="card">
         <div class="card-title">search_news(ticker)</div>
-        <div class="card-sub">Filtra RSS por keywords, retorna últimas 7d</div>
+        <div class="card-sub">Filtra RSS últimos 7d com dedup por URL</div>
       </div>
       <div class="card">
         <div class="card-title">get_price_data(ticker)</div>
-        <div class="card-sub">yfinance: último close, retorno, range</div>
+        <div class="card-sub">Último close, retorno acumulado, range, 5 últimos</div>
       </div>
       <div class="card">
         <div class="card-title">calculate_indicators(ticker)</div>
@@ -267,19 +316,27 @@
       </div>
       <div class="card">
         <div class="card-title">generate_recommendation(...)</div>
-        <div class="card-sub">Formata saída final em JSON (schema do enunciado)</div>
+        <div class="card-sub">JSON estruturado (schema do enunciado)</div>
+      </div>
+      <div class="card">
+        <div class="card-title">get_cvm_filings(ticker)</div>
+        <div class="card-sub">Fatos relevantes IPE com cache local</div>
+      </div>
+      <div class="card">
+        <div class="card-title">get_quarterly_summary(ticker)</div>
+        <div class="card-sub">Resumo ITR/DFP — receita, lucro, dívida</div>
       </div>
     </div>
   </div>
 
   <div class="arrow-v"></div>
 
-  <!-- Layer 3: Agents (sequential) -->
+  <!-- Layer 3: Agents + Crews -->
   <div class="layer">
     <div class="layer-head">
       <span class="layer-num">3</span>
-      <span class="layer-title">Agentes CrewAI · processo sequencial</span>
-      <span class="layer-desc">multi-agent (bonus criativo do enunciado)</span>
+      <span class="layer-title">Agentes & Crews CrewAI</span>
+      <span class="layer-desc">4 agentes · 2 crews · processo sequencial</span>
     </div>
     <div class="cards-row">
       <div class="card">
@@ -293,20 +350,43 @@
       </div>
       <div class="arrow-h">→</div>
       <div class="card">
+        <div class="card-title">CVM RI Analyst</div>
+        <div class="card-sub">Eventos fundamentalistas (Deep Research apenas)<br><em>tools: get_cvm_filings, get_quarterly_summary</em></div>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="card">
         <div class="card-title">Investment Strategist</div>
         <div class="card-sub">CoT em 4 passos + decisão final<br><em>tool: generate_recommendation</em></div>
+      </div>
+    </div>
+    <div class="sub-section">
+      <div class="sub-section-title">Crews configuradas</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;">
+        <div>
+          <strong style="font-size:0.92rem;">Investment Crew (3 agentes)</strong><br>
+          <span class="agent-chip">news_analyst</span>
+          <span class="agent-chip">technical_analyst</span>
+          <span class="agent-chip">investment_strategist</span>
+        </div>
+        <div>
+          <strong style="font-size:0.92rem;">Deep Research Crew (4 agentes)</strong><br>
+          <span class="agent-chip">news_analyst</span>
+          <span class="agent-chip">technical_analyst</span>
+          <span class="agent-chip">cvm_ri_analyst</span>
+          <span class="agent-chip">investment_strategist</span>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="arrow-v"></div>
 
-  <!-- Layer 4: LLM Backend -->
+  <!-- Layer 4: LLM Runtime -->
   <div class="layer purple">
     <div class="layer-head">
       <span class="layer-num">4</span>
       <span class="layer-title">LLM Runtime</span>
-      <span class="layer-desc">via OpenRouter (OpenAI-compatible)</span>
+      <span class="layer-desc">OpenRouter via litellm · streaming async</span>
     </div>
     <div class="cards">
       <div class="card">
@@ -315,40 +395,157 @@
       </div>
       <div class="card">
         <div class="card-title">openai/gpt-4o-mini</div>
-        <div class="card-sub">Default validado — ~$0.001 por run de 4 tickers</div>
+        <div class="card-sub">Default validado — ~US$ 0.001 por run completo</div>
       </div>
       <div class="card">
-        <div class="card-title">Modelos free (alt.)</div>
-        <div class="card-sub">gemma-4-31b · qwen3-80b · nemotron-120b</div>
+        <div class="card-title">litellm.acompletion</div>
+        <div class="card-sub">Streaming async para chat single-agent</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Modelos alternativos</div>
+        <div class="card-sub">Configurável via <code>settings.llm_model</code> · gemma, qwen, deepseek</div>
       </div>
     </div>
   </div>
 
   <div class="arrow-v"></div>
 
-  <!-- Layer 5: Outputs -->
+  <!-- Layer 5: Backend FastAPI -->
   <div class="layer orange">
     <div class="layer-head">
       <span class="layer-num">5</span>
-      <span class="layer-title">Outputs e Avaliação</span>
-      <span class="layer-desc">artefatos de entrega + métricas</span>
+      <span class="layer-title">Backend FastAPI</span>
+      <span class="layer-desc">REST + WebSocket + Scheduler + SQLite (porta 8000)</span>
     </div>
     <div class="cards">
       <div class="card">
-        <div class="card-title">recommendations.json</div>
-        <div class="card-sub">1 entrada por ticker · schema da página 7 do enunciado</div>
+        <div class="card-title">25+ endpoints REST</div>
+        <div class="card-sub">tickers · agents · crews · news · cvm · recommendations · backtest · hit-rate · portfolios · chat-sessions · scheduler · settings</div>
       </div>
       <div class="card">
-        <div class="card-title">cot_log.md</div>
-        <div class="card-sub">Chain-of-Thought completo · graded artifact</div>
+        <div class="card-title">WebSocket /api/chat</div>
+        <div class="card-sub">Sessão lazy (zero fantasmas) · streaming token-a-token · auto-detect de ticker no texto</div>
       </div>
       <div class="card">
-        <div class="card-title">backtest_curves.png</div>
-        <div class="card-sub">Agente vs Buy-and-Hold · 6 meses</div>
+        <div class="card-title">APScheduler (cron)</div>
+        <div class="card-sub">news 4/4h · crew diário 09:30 · CVM semanal dom 06:00</div>
       </div>
       <div class="card">
-        <div class="card-title">summary.csv</div>
-        <div class="card-sub">Tabela final: recomendação, retorno agente, retorno B&amp;H, delta</div>
+        <div class="card-title">Backtest engine</div>
+        <div class="card-sub">MACD-cross + RSI heurístico · agente vs Buy-and-Hold em 1-2y</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Hit-rate engine</div>
+        <div class="card-sub">Acurácia D+N automática sobre <code>tbRecommendation</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">SQLite (WAL)</div>
+        <div class="card-sub">14 tabelas · busy_timeout 30s · checkpoint automático</div>
+      </div>
+    </div>
+    <div class="sub-section">
+      <div class="sub-section-title">Tabelas principais</div>
+      <div>
+        <span class="agent-chip">tickers</span>
+        <span class="agent-chip">agents</span>
+        <span class="agent-chip">crews</span>
+        <span class="agent-chip">agent_runs</span>
+        <span class="agent-chip">recommendations</span>
+        <span class="agent-chip">news_items</span>
+        <span class="agent-chip">cvm_filings</span>
+        <span class="agent-chip">portfolios</span>
+        <span class="agent-chip">positions</span>
+        <span class="agent-chip">orders</span>
+        <span class="agent-chip">chat_sessions</span>
+        <span class="agent-chip">chat_messages</span>
+        <span class="agent-chip">settings</span>
+        <span class="agent-chip">apscheduler_jobs</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 6: Frontend React -->
+  <div class="layer red">
+    <div class="layer-head">
+      <span class="layer-num">6</span>
+      <span class="layer-title">Frontend React · 9 telas</span>
+      <span class="layer-desc">React 19 + Vite + TanStack Query + lightweight-charts (porta 3000)</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">/ · Dashboard</div>
+        <div class="card-sub">Watchlist + candlestick + última rec com "Ler mais" + plano swing</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/news</div>
+        <div class="card-sub">Notícias multi-fonte com ingestão on-demand</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/cvm</div>
+        <div class="card-sub">Fatos relevantes IPE/ITR/DFP por ticker</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/chat</div>
+        <div class="card-sub">WebSocket · target dropdown (Crew ou single-agent) com tooltips · streaming · sessões deletáveis</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/portfolio</div>
+        <div class="card-sub"><strong>3 carteiras por perfil de risco</strong> (Conservador / Moderado / Agressivo) · BUY/SELL paper trading</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/backtest</div>
+        <div class="card-sub">Tabela 4 tickers + curva equity Agente vs B&amp;H · selector D+N</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/accuracy</div>
+        <div class="card-sub">KPIs hit-rate D+N + breakdown por ticker e por tipo de rec + detalhe linha-a-linha</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/agents</div>
+        <div class="card-sub">CRUD de agentes CrewAI (system + custom)</div>
+      </div>
+      <div class="card">
+        <div class="card-title">/settings</div>
+        <div class="card-sub">Crons editáveis · LLM model · disparo manual de jobs com toast feedback</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 7: Outputs / Avaliação -->
+  <div class="layer teal">
+    <div class="layer-head">
+      <span class="layer-num">7</span>
+      <span class="layer-title">Outputs &amp; Avaliação</span>
+      <span class="layer-desc">artefatos vivos, não estáticos</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">tbRecommendation</div>
+        <div class="card-sub">COMPRAR/VENDER/AGUARDAR + Chain-of-Thought em <code>reasoning</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">tbAgentRun</div>
+        <div class="card-sub">Trilha completa de cada execução do crew (raw output do LLM)</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Hit-rate D+N</div>
+        <div class="card-sub">Acurácia recalculada sob demanda (1d / 3d / 5d / 10d)</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Backtest equity curve</div>
+        <div class="card-sub">Agente vs Buy-and-Hold com retorno % e Δ p.p.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Carteira simulada</div>
+        <div class="card-sub">3 perfis com P&amp;L e posições live em yfinance</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Swagger /docs + ReDoc</div>
+        <div class="card-sub">Documentação interativa OpenAPI 3.1</div>
       </div>
     </div>
   </div>
@@ -356,9 +553,10 @@
 </div>
 
 <footer>
-  <p><strong>Ricardo Frasson</strong> · MBA Data Science &amp; AI · FIAP</p>
-  <p>Notebook: <code>Projeto_Integrado_CrewAI_QuantumFinance.ipynb</code> · 36 células</p>
-  <p style="margin-top:8px;">Gerado em maio/2026</p>
+  <p><strong>Autores:</strong> Ricardo Frasson · Gustavo Gabriel Garcia Gomes do Nascimento (RM362350)</p>
+  <p>MBA Data Science &amp; AI · FIAP · Professor: Felipe Gustavo Silva Teodoro</p>
+  <p style="margin-top:8px;">Repositório: <a href="https://github.com/dataseeek/quantumfinance-ai-agents">github.com/dataseeek/quantumfinance-ai-agents</a></p>
+  <p style="margin-top:8px;color:var(--gray-300);">Atualizado em 25/06/2026 · refletindo o estado real do app no commit <code>ded2aee</code></p>
 </footer>
 
 </body>
