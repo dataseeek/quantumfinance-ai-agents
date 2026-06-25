@@ -1,0 +1,29 @@
+# Secrets
+.env
+quantumfinance-app/backend/.env
+
+# Python
+__pycache__/
+*.pyc
+*.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+.venv/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Tests
+quantumfinance-app/frontend/test-results/
+quantumfinance-app/frontend/playwright-report/
+
+# Data (SQLite + caches) — app.db é versionado; só excluímos WAL/SHM/cache bruto.
+quantumfinance-app/backend/data/*.db-*
+quantumfinance-app/backend/data/cvm_cache/
+
+# Misc
+.DS_Store
+*.log

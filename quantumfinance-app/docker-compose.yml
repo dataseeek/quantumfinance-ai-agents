@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    container_name: qf-backend
+    platform: linux/amd64
+    env_file: ./backend/.env
+    environment:
+      - DATABASE_URL=sqlite:///./data/app.db
+      - CORS_ORIGINS=http://localhost:3000
+    volumes:
+      - sqlite-data:/app/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: qf-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  sqlite-data:

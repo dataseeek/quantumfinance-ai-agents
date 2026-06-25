@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitetura — Projeto Integrado AI Agents (QuantumFinance + CrewAI)</title>
+<style>
+  :root {
+    --pink: #e91e63;
+    --pink-soft: #fce4ec;
+    --pink-dark: #ad1457;
+    --gray-900: #212121;
+    --gray-700: #424242;
+    --gray-500: #757575;
+    --gray-300: #e0e0e0;
+    --gray-100: #f5f5f5;
+    --white: #ffffff;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-hover: 0 8px 24px rgba(233,30,99,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    line-height: 1.5;
+    padding: 40px 20px;
+  }
+  header {
+    max-width: 960px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 2.2rem;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  header .accent { color: var(--pink); }
+  header .subtitle {
+    color: var(--gray-500);
+    font-size: 1.05rem;
+    font-weight: 400;
+  }
+  header .meta {
+    margin-top: 16px;
+    display: inline-flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  header .meta span {
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+  }
+  .flow {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .layer {
+    width: 100%;
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--pink);
+    padding: 24px 28px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .layer:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+  .layer-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .layer-num {
+    background: var(--pink);
+    color: var(--white);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .layer-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    letter-spacing: -0.01em;
+  }
+  .layer-desc {
+    color: var(--gray-500);
+    font-size: 0.92rem;
+    margin-left: auto;
+    font-style: italic;
+  }
+  .cards {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .card {
+    background: var(--gray-100);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--pink);
+  }
+  .card-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+  }
+  .card-sub {
+    color: var(--gray-500);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  /* Sequential row (agents) — horizontal arrows inside the layer */
+  .cards-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .cards-row .card {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+  .cards-row .arrow-h {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pink);
+    font-size: 1.6rem;
+    padding: 0 8px;
+    font-weight: bold;
+  }
+  /* Vertical arrow between layers */
+  .arrow-v {
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 18px solid var(--pink);
+    margin: 12px 0;
+    position: relative;
+  }
+  .arrow-v::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: -28px;
+    width: 6px;
+    height: 28px;
+    background: var(--pink);
+    border-radius: 3px;
+  }
+  /* Layer color variations */
+  .layer.green { border-top-color: #2e7d32; }
+  .layer.green .layer-num { background: #2e7d32; }
+  .layer.green .card { border-left-color: #2e7d32; }
+  .layer.blue { border-top-color: #1565c0; }
+  .layer.blue .layer-num { background: #1565c0; }
+  .layer.blue .card { border-left-color: #1565c0; }
+  .layer.purple { border-top-color: #6a1b9a; }
+  .layer.purple .layer-num { background: #6a1b9a; }
+  .layer.purple .card { border-left-color: #6a1b9a; }
+  .layer.orange { border-top-color: #ef6c00; }
+  .layer.orange .layer-num { background: #ef6c00; }
+  .layer.orange .card { border-left-color: #ef6c00; }
+  footer {
+    max-width: 960px;
+    margin: 50px auto 0;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 0.85rem;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-300);
+  }
+  footer strong { color: var(--gray-700); }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.6rem; }
+    .layer { padding: 18px; }
+    .layer-desc { display: none; }
+    .cards-row { flex-direction: column; }
+    .cards-row .arrow-h { transform: rotate(90deg); padding: 4px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Arquitetura — <span class="accent">AI Investment Agent</span></h1>
+  <div class="subtitle">Projeto Integrado · QuantumFinance · CrewAI Multi-Agent · OpenRouter</div>
+  <div class="meta">
+    <span>VALE3 · PETR4 · BBAS3 · ITUB4</span>
+    <span>Python 3.10</span>
+    <span>CrewAI 1.14</span>
+    <span>FIAP MBA Data Science & AI</span>
+  </div>
+</header>
+
+<div class="flow">
+
+  <!-- Layer 1: Data Sources -->
+  <div class="layer green">
+    <div class="layer-head">
+      <span class="layer-num">1</span>
+      <span class="layer-title">Fontes de Dados</span>
+      <span class="layer-desc">externas, open-source, sem API key</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">RSS · InfoMoney</div>
+        <div class="card-sub">Manchetes financeiras em PT-BR via <code>feedparser</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">RSS · Valor Econômico</div>
+        <div class="card-sub">Mercados / Finanças via <code>feedparser</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">yfinance · Yahoo Finance</div>
+        <div class="card-sub">OHLCV diário (6 meses) para tickers B3 (sufixo <code>.SA</code>)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 2: Tools -->
+  <div class="layer blue">
+    <div class="layer-head">
+      <span class="layer-num">2</span>
+      <span class="layer-title">Tools (CrewAI <code>@tool</code>)</span>
+      <span class="layer-desc">4 ferramentas — &gt; 3 exigidas no rubric</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">search_news(ticker)</div>
+        <div class="card-sub">Filtra RSS por keywords, retorna últimas 7d</div>
+      </div>
+      <div class="card">
+        <div class="card-title">get_price_data(ticker)</div>
+        <div class="card-sub">yfinance: último close, retorno, range</div>
+      </div>
+      <div class="card">
+        <div class="card-title">calculate_indicators(ticker)</div>
+        <div class="card-sub">RSI(14), MACD, SMA/EMA(20), Bollinger via <code>ta</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">generate_recommendation(...)</div>
+        <div class="card-sub">Formata saída final em JSON (schema do enunciado)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 3: Agents (sequential) -->
+  <div class="layer">
+    <div class="layer-head">
+      <span class="layer-num">3</span>
+      <span class="layer-title">Agentes CrewAI · processo sequencial</span>
+      <span class="layer-desc">multi-agent (bonus criativo do enunciado)</span>
+    </div>
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-title">News Analyst</div>
+        <div class="card-sub">Sentimento Positivo/Negativo/Neutro<br><em>tool: search_news</em></div>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="card">
+        <div class="card-title">Technical Analyst</div>
+        <div class="card-sub">Postura Bullish/Bearish/Neutra<br><em>tools: get_price_data, calculate_indicators</em></div>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="card">
+        <div class="card-title">Investment Strategist</div>
+        <div class="card-sub">CoT em 4 passos + decisão final<br><em>tool: generate_recommendation</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 4: LLM Backend -->
+  <div class="layer purple">
+    <div class="layer-head">
+      <span class="layer-num">4</span>
+      <span class="layer-title">LLM Runtime</span>
+      <span class="layer-desc">via OpenRouter (OpenAI-compatible)</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">OpenRouter Gateway</div>
+        <div class="card-sub">Endpoint OpenAI-compatible: <code>https://openrouter.ai/api/v1</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title">openai/gpt-4o-mini</div>
+        <div class="card-sub">Default validado — ~$0.001 por run de 4 tickers</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Modelos free (alt.)</div>
+        <div class="card-sub">gemma-4-31b · qwen3-80b · nemotron-120b</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-v"></div>
+
+  <!-- Layer 5: Outputs -->
+  <div class="layer orange">
+    <div class="layer-head">
+      <span class="layer-num">5</span>
+      <span class="layer-title">Outputs e Avaliação</span>
+      <span class="layer-desc">artefatos de entrega + métricas</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">recommendations.json</div>
+        <div class="card-sub">1 entrada por ticker · schema da página 7 do enunciado</div>
+      </div>
+      <div class="card">
+        <div class="card-title">cot_log.md</div>
+        <div class="card-sub">Chain-of-Thought completo · graded artifact</div>
+      </div>
+      <div class="card">
+        <div class="card-title">backtest_curves.png</div>
+        <div class="card-sub">Agente vs Buy-and-Hold · 6 meses</div>
+      </div>
+      <div class="card">
+        <div class="card-title">summary.csv</div>
+        <div class="card-sub">Tabela final: recomendação, retorno agente, retorno B&amp;H, delta</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p><strong>Ricardo Frasson</strong> · MBA Data Science &amp; AI · FIAP</p>
+  <p>Notebook: <code>Projeto_Integrado_CrewAI_QuantumFinance.ipynb</code> · 36 células</p>
+  <p style="margin-top:8px;">Gerado em maio/2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --pink: #e91e63;
+  --pink-dark: #ad1457;
+  --bg: #0f1419;
+  --bg-card: #1a1f2e;
+  --bg-elevated: #232a3a;
+  --border: #2d3548;
+  --text: #e8eaed;
+  --text-muted: #9aa0a6;
+  --green: #4caf50;
+  --red: #ef5350;
+  --amber: #ffa726;
+  --blue: #42a5f5;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--pink); text-decoration: none; }
+a:hover { color: var(--pink-dark); }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: 0;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--pink); }
+
+.pill { display: inline-block; padding: 3px 11px; border-radius: 999px; font-weight: 600; font-size: 0.78rem; letter-spacing: 0.03em; }
+.pill-buy   { background: rgba(76,175,80,0.18);  color: var(--green); }
+.pill-sell  { background: rgba(239,83,80,0.18);  color: var(--red); }
+.pill-hold  { background: rgba(255,167,38,0.18); color: var(--amber); }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.btn-primary {
+  background: var(--pink);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.btn-primary:hover { background: var(--pink-dark); }
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }

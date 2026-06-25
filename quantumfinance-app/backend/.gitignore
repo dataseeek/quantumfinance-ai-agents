@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+# app.db é versionado para entregar o dataset populado ao avaliador.
+# Apenas os arquivos transientes do WAL/SHM e o cache bruto da CVM ficam de fora.
+data/*.db-*
+data/cvm_cache/
+*.log
+.pytest_cache/
+.coverage
